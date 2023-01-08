@@ -10,14 +10,13 @@ describe('User model', () => {
 
     beforeEach(async () => {
         await start(express(), testDB);
-        await User.syncIndexes();
         await new User({
             username: 'exists',
             password: '123456',
         }).save();
     });
 
-    describe('Username', async () => {
+    describe('Successful cases', async () => {
         it('Creates a valid user', async () => {
             const user = new User({
                 username: 'abcde',
@@ -53,7 +52,9 @@ describe('User model', () => {
 
             expect(user.username).to.equal('abcde');
         });
+    })
 
+    describe('Username', async () => {
         it('Throws an error for a username that is shorter than 5 characters', async () => {
             const user = new User({
                 username: 'a',
