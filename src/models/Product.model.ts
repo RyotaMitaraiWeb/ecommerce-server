@@ -1,7 +1,8 @@
 import { model, Types, Schema } from "mongoose";
-import { IUser } from "./User.model";
+import User, { IUser } from "./User.model.js";
 
 export interface IProduct {
+    _id: Types.ObjectId,
     name: string;
     price: number;
     image: string;
@@ -38,7 +39,7 @@ const ProductSchema = new Schema<IProduct>({
 });
 
 // fix price to the second decimal
-ProductSchema.pre('save', async function(next) {
+ProductSchema.pre('save', async function (next) {
     const product = this;
     if (!product.isModified('price')) return next(); // this runs the fixing only when the product is created or the price is change
 
@@ -47,6 +48,24 @@ ProductSchema.pre('save', async function(next) {
     product.price = newPrice;
 
     return next();
+});
+
+ProductSchema.post('findOneAndDelete', async (document: IProduct) => {
+    const id = document._id;
+    await User.updateMany({ products: { $in: [id] } }, {
+        $pull: { products: id }
+    },
+        {
+            new: true,
+        }
+    );
+
+    await User.updateMany({ boughtProducts: { $in: [id] } }, {
+        $pull: { boughtProducts: id }
+    },
+        {
+            new: true,
+        });
 });
 
 const Product = model<IProduct>('Product', ProductSchema);
