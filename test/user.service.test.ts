@@ -7,10 +7,10 @@ import mongoose, { Types } from "mongoose";
 import { start } from "../init/app.js";
 import User from "../src/models/User.model.js";
 
-describe('User model', () => {
+describe('userService', () => {
     let testDB = 'mongodb://127.0.0.1/ecommerce-test';
     let username = 'abcde';
-    let password = '123456'
+    let password = '123456';
 
     beforeEach(async () => {
         await start(express(), testDB);
@@ -109,6 +109,72 @@ describe('User model', () => {
 
             expect(error).to.be.true;
         })
+    });
+
+    describe('changePalette', async () => {
+        it('Changes palette successfully', async () => {
+            const user = await User.findOne({ username });
+            const updatedUser = await userService.changePalette(user!._id, 'indigo');
+
+            expect(updatedUser?.palette).to.equal('indigo');
+        });
+
+        it('Throws an error if the user does not exist', async () => {
+            const user = await User.findOne({ username: 'abcde1' });
+            let error = false;
+            try {
+                await userService.changePalette(user!._id, 'indigo');
+            } catch {
+                error = true;
+            }
+
+            expect(error).to.be.true;
+        });
+
+        it('Throws an error if the palette is invalid', async () => {
+            const user = await User.findOne({ username });
+            let error = false;
+            try {
+                await userService.changePalette(user!._id, 'a' as any);
+            } catch {
+                error = true;
+            }
+
+            expect(error).to.be.true;
+        });
+    });
+
+    describe('changeTheme', async () => {
+        it('Changes theme successfully', async () => {
+            const user = await User.findOne({ username });
+            const updatedUser = await userService.changeTheme(user!._id, 'dark');
+
+            expect(updatedUser?.theme).to.equal('dark');
+        });
+
+        it('Throws an error if the user does not exist', async () => {
+            const user = await User.findOne({ username: 'abcde1' });
+            let error = false;
+            try {
+                await userService.changeTheme(user!._id, 'dark');
+            } catch {
+                error = true;
+            }
+
+            expect(error).to.be.true;
+        });
+
+        it('Throws an error if the palette is invalid', async () => {
+            const user = await User.findOne({ username });
+            let error = false;
+            try {
+                await userService.changeTheme(user!._id, 'a' as any);
+            } catch {
+                error = true;
+            }
+
+            expect(error).to.be.true;
+        });
     });
 
     afterEach(async () => {

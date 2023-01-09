@@ -1,5 +1,5 @@
 import { Types } from "mongoose";
-import User from "../src/models/User.model.js";
+import User, { palette, theme } from "../src/models/User.model.js";
 import * as bcrypt from 'bcrypt';
 
 export interface IAuthUser {
@@ -39,9 +39,29 @@ async function login(user: IAuthUser) {
     return user;
 }
 
+async function changePalette(id: string | Types.ObjectId, palette: palette) {
+    const user = await User.findByIdAndUpdate(id, { palette }, {
+        new: true,
+    });
+
+    if (user === null) throw Error('User does not exist');
+    return user;
+}
+
+async function changeTheme(id: string | Types.ObjectId, theme: theme) {
+    const user = await User.findByIdAndUpdate(id, { theme }, {
+        new: true,
+    });
+    
+    if (user === null) throw Error('User does not exist');
+    return user;
+}
+
 export const userService = {
     findUserByUsername,
     findUserById,
     register,
     login,
+    changePalette,
+    changeTheme,
 };
