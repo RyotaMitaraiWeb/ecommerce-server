@@ -1,4 +1,5 @@
 import { model, Types, Schema } from "mongoose";
+import Transaction from "./Transaction.model.js";
 import User, { IUser } from "./User.model.js";
 
 export interface IProduct {
@@ -66,6 +67,8 @@ ProductSchema.post('findOneAndDelete', async (document: IProduct) => {
         {
             new: true,
         });
+    
+    await Transaction.deleteMany({ product: id });
 });
 
 const Product = model<IProduct>('Product', ProductSchema);

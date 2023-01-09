@@ -4,6 +4,7 @@ import { describe, it } from "mocha";
 import mongoose from "mongoose";
 import { start } from "../init/app.js";
 import Product from "../src/models/Product.model.js";
+import Transaction from "../src/models/Transaction.model.js";
 import User from "../src/models/User.model.js";
 
 describe('Product model', () => {
@@ -93,8 +94,38 @@ describe('Product model', () => {
             expect(buyer1?.boughtProducts.length).to.equal(0);
             expect(buyer2?.boughtProducts.length).to.equal(0);
             expect(ownerOfDeletedProduct?.products.length).to.equal(0);
-            
+        });
 
+        it('Deletes all associated transactions when product is deleted', async () => {
+            const user = new User({ username: 'abcde', password: '123456' });
+            await user.save();
+
+            const product = new Product(
+                { 
+                    name: 'abcde', 
+                    price: 0.01, 
+                    image: 'a', 
+                    owner: user,
+                }
+            );
+
+            await product.save();
+            user.products.push(product);
+            await user.save();
+
+            const transaction = new Transaction({
+                product,
+                buyer: user,
+            });
+
+            await transaction.save();
+
+            await Product.findOneAndDelete({ 
+                _id: product._id,
+            });
+
+            const deletedTransaction = await Transaction.findById(transaction._id);
+            expect(deletedTransaction).to.be.null;
         });
     });
 
