@@ -6,6 +6,7 @@ import mongoose, { Types } from "mongoose";
 import { start } from "../init/app.js";
 import User from "../src/models/User.model.js";
 import Product from "../src/models/Product.model.js";
+import Transaction from "../src/models/Transaction.model.js";
 
 describe('productService', () => {
     let testDB = 'mongodb://127.0.0.1/ecommerce-test';
@@ -202,6 +203,17 @@ describe('productService', () => {
             expect(createdProduct).to.not.be.null;
             expect(createdProduct).to.be.ok;
             expect(createdProduct?.owner).to.deep.equal(user?._id);
+        });
+
+        it('Creates a transaction successfully', async () => {
+            const product = await productService.createProduct({
+                name,
+                image,
+                price,
+            }, userId);
+
+            const transaction = await Transaction.findOne({ product: product._id, buyer: userId});
+            expect(transaction).to.not.be.null;
         });
 
         it('Throws an error if creation fails', async () => {

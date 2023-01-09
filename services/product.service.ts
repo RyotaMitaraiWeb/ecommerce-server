@@ -1,6 +1,7 @@
 import { Types } from "mongoose";
 import Product from "../src/models/Product.model.js";
 import User from "../src/models/User.model.js";
+import { transactionService } from "./transaction.service.js";
 
 export type sortCategory = 'asc' | 'desc';
 
@@ -47,6 +48,7 @@ async function createProduct(product: IProductInput, userId: string | Types.Obje
     user.products.push(newProduct);
     await user.save();
 
+    await transactionService.createTransaction(newProduct, user);
     return newProduct;
 };
 
