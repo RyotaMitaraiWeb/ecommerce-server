@@ -7,7 +7,7 @@ import Product from "../src/models/Product.model.js";
 import Transaction from "../src/models/Transaction.model.js";
 import User from "../src/models/User.model.js";
 
-describe('Product model', () => {
+describe('Transaction model', () => {
     let testDB = 'mongodb://127.0.0.1/ecommerce-test';
 
     beforeEach(async () => {
@@ -38,10 +38,12 @@ describe('Product model', () => {
 
             await transaction.save();
 
-            expect(transaction.buyer).to.be.ok;
-            expect(transaction.product).to.be.ok;
-            expect(transaction.createdAt).to.be.ok;
-        })
+            const transactionResult = await Transaction.findById(transaction._id);
+
+            expect(transactionResult?.buyer).to.be.ok;
+            expect(transactionResult?.product).to.be.ok;
+            expect(transactionResult?.createdAt).to.be.ok;
+        });
     });
 
     afterEach(async () => {
