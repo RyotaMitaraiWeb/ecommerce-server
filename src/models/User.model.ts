@@ -2,7 +2,11 @@ import { model, Schema, Types } from "mongoose";
 import { IProduct } from "./Product.model";
 import * as bcrypt from 'bcrypt';
 
+export type palette = 'blue' | 'indigo' | 'deepPurple' | 'green' | 'amber' | 'pink';
+export type theme = 'light' | 'dark';
+
 export interface IUser {
+    _id: Types.ObjectId;
     username: string;
     password: string;
     products: IProduct[],
