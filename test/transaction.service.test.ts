@@ -63,10 +63,37 @@ describe('transactionService', () => {
     describe('createTransaction', async () => {
         it('creates a transaction successfully', async () => {
             await transactionService.createTransaction(id, userId);
-            const transaction = await Transaction.findOne({ product: id, buyer: userId});
+            const transaction = await Transaction.findOne({ product: id, buyer: userId });
             expect(transaction).to.not.be.null;
         });
-    })
+    });
+
+    describe('getUserTransactions', async () => {
+        it('Gets all of the user\'s transactions successfully', async () => {
+            await new Transaction({ buyer: userId, product: id }).save();
+            const transactions = await transactionService.getUserTransactions(userId);
+            expect(transactions.length).to.equal(1);
+        });
+
+        it('Populates the product when not called with an additional argument', async () => {
+            await new Transaction({ buyer: userId, product: id }).save();
+            const transactions = await transactionService.getUserTransactions(userId);
+            const transaction = transactions[0];
+            expect(transaction.product._id).to.deep.equal(id);
+        });
+
+        it('Does not populate the product when false is passed as the second argument', async () => {
+            await new Transaction({ buyer: userId, product: id }).save();
+            const transactions = await transactionService.getUserTransactions(userId, false);
+            const transaction = transactions[0];
+            expect(transaction.product).to.deep.equal(id);
+        });
+
+        it('Returns an empty array if the user does not have any transactions', async () => {
+            const transactions = await transactionService.getUserTransactions(userId);
+            expect(transactions).to.deep.equal([]);
+        });
+    });
 
     afterEach(async () => {
         await mongoose.connection.dropDatabase();
