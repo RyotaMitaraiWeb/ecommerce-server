@@ -124,7 +124,7 @@ describe('Session middleware', async () => {
         });
     });
 
-    describe.only('blacklistToken', async () => {
+    describe('blacklistToken', async () => {
         it('Blacklists the token', async () => {
             await request(app)
                 .get(blacklistTokenEndpoint)
