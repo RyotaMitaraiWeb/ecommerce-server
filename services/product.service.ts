@@ -48,7 +48,6 @@ async function createProduct(product: IProductInput, userId: string | Types.Obje
     user.products.push(newProduct);
     await user.save();
 
-    await transactionService.createTransaction(newProduct, user);
     return newProduct;
 };
 
@@ -161,6 +160,9 @@ async function buyProduct(userId: string | Types.ObjectId, productId: string | T
 
     user.boughtProducts.push(product);
     await user.save();
+
+    await transactionService.createTransaction(product, user);
+
 
     return product;
 }

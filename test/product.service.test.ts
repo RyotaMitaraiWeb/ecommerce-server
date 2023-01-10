@@ -205,17 +205,6 @@ describe('productService', () => {
             expect(createdProduct?.owner).to.deep.equal(user?._id);
         });
 
-        it('Creates a transaction successfully', async () => {
-            const product = await productService.createProduct({
-                name,
-                image,
-                price,
-            }, userId);
-
-            const transaction = await Transaction.findOne({ product: product._id, buyer: userId});
-            expect(transaction).to.not.be.null;
-        });
-
         it('Throws an error if creation fails', async () => {
             let error = false;
 
@@ -316,7 +305,7 @@ describe('productService', () => {
             const owner = new User({ username: 'owner', password: '123456' });
             await owner.save();
             const product = new Product({ name: 'newproduct', price: 1, image: 'a', owner });
-            await product.save();            
+            await product.save();
 
             await productService.buyProduct(userId, product._id);
 
@@ -326,6 +315,20 @@ describe('productService', () => {
             const buyer = await User.findById(userId).populate('boughtProducts');
             expect(buyer?.boughtProducts.length).to.equal(1);
         });
+
+        it('Creates a transaction when successful', async () => {
+            it('Creates a transaction successfully', async () => {
+                const owner = new User({ username: 'owner', password: '123456' });
+                await owner.save();
+                const product = new Product({ name: 'newproduct', price: 1, image: 'a', owner });
+                await product.save();
+
+                await productService.buyProduct(userId, product._id);
+
+                const transaction = await Transaction.findOne({ product: product._id, buyer: userId });
+                expect(transaction).to.not.be.null;
+            });
+        })
 
         it('Throws an error if the user does not exist', async () => {
             let error = false;
@@ -414,7 +417,7 @@ describe('productService', () => {
         });
 
         it('Returns false when the user is the owner of the product', async () => {
-            const user = new User({ username: 'owner', password: '123456'});
+            const user = new User({ username: 'owner', password: '123456' });
             await user.save();
 
             const product = new Product({ name: 'abcde', price: 1, image: 'a', owner: user._id });
