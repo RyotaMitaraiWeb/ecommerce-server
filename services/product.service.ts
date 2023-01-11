@@ -131,10 +131,7 @@ async function getProductCount() {
  * or the user is the owner of the product.
  */
 async function buyProduct(userId: string | Types.ObjectId, productId: string | Types.ObjectId) {
-    userId = new Types.ObjectId(userId);
-    productId = new Types.ObjectId(productId);
-
-    const product = await Product.findById(productId).populate('owner');
+    const product = await Product.findById(productId);
     const user = await User.findById(userId);
 
     if (product === null) {
@@ -145,13 +142,13 @@ async function buyProduct(userId: string | Types.ObjectId, productId: string | T
         throw Error('User does not exist');
     }
 
-    const duplicate = await User.findOne({ boughtProducts: { $in: [productId] } });
-
-    if (duplicate !== null) {
+    const duplicate = user.boughtProducts.find(bp => bp._id.toString() === productId)
+    
+    if (duplicate) {
         throw new Error('Product has already been bought');
-    }
-
-    if (userId.equals(product.owner._id)) {
+    }    
+    
+    if (userId.toString() === product.owner.toString()) {
         throw new Error('Owners cannot buy their own products');
     }
 
@@ -173,10 +170,11 @@ async function buyProduct(userId: string | Types.ObjectId, productId: string | T
  */
 async function checkIfUserHasBoughtTheProduct(userId: string | Types.ObjectId, productId: string | Types.ObjectId) {
     const user = await User.findById(userId);
-
+    
     if (user === null) throw Error('User does not exist');
-
+    
     const boughtProduct = user.boughtProducts.find(bp => bp._id.equals(productId));
+    
     return boughtProduct !== undefined && boughtProduct !== null;
 }
 
