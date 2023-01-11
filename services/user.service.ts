@@ -36,7 +36,7 @@ async function login(user: IAuthUser) {
         throw Error('Wrong username or password');
     }
 
-    return user;
+    return existingUser;
 }
 
 async function changePalette(id: string | Types.ObjectId, palette: palette) {
