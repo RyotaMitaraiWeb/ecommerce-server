@@ -34,10 +34,13 @@ export async function attachProductToRequest(req: IRequest, res: Response, next:
  * use the ``checkIfUserIsTheCreatorOfTheProduct`` middleware
  */
 export async function authorizeOwner(req: IRequest, res: Response, next: NextFunction) {
-    const userId = req.user._id;
-    const productId = req.params['id'];
-
     try {
+        if (!req.user) {
+            throw Error('Invalid session');
+        }
+        
+        const userId = req.user._id;
+        const productId = req.params['id'];
         if (req.product) {
             const ownerId = req.product.owner;
             if (ownerId.toString() === userId) {
@@ -66,26 +69,35 @@ export async function authorizeOwner(req: IRequest, res: Response, next: NextFun
  * is the creator of the product. To abort the request if the user is not the creator of the product,
  * use the ``authorizeOwner`` middleware instead. 
  */
-export async function checkIfUserIsTheCreatorOfTheProduct(req: IRequest, _res: Response, next: NextFunction) {
-    req.isOwner = false;
-    const userId = req.user._id;
-    const productId = req.params['id'];
+export async function checkIfUserIsTheCreatorOfTheProduct(req: IRequest, res: Response, next: NextFunction) {
 
-    if (req.product) {
-        const ownerId = req.product.owner;
-        if (ownerId.toString() === userId) {
-            req.isOwner = true;
+    try {
+        if (!req.user) {
+            throw Error('Invalid session');
         }
-    } else {
-        const product = await productService.findProductById(productId);
 
-        if (product?.owner.toString() === userId) {
-            req.product = product;
-            req.isOwner = true;
+        req.isOwner = false;
+        const userId = req.user._id;
+        const productId = req.params['id'];
+        if (req.product) {
+            const ownerId = req.product.owner;
+            if (ownerId.toString() === userId) {
+                req.isOwner = true;
+            }
+        } else {
+            const product = await productService.findProductById(productId);
+
+            if (product?.owner.toString() === userId) {
+                req.product = product;
+                req.isOwner = true;
+            }
         }
+
+        next();
+    } catch (err) {
+        const errors = mapErrors(err)
+        res.status(HttpStatus.UNAUTHORIZED).json(errors).end();
     }
-
-    next();
 }
 
 /**
@@ -95,12 +107,16 @@ export async function checkIfUserIsTheCreatorOfTheProduct(req: IRequest, _res: R
  */
 
 export async function authorizeBuyer(req: IRequest, res: Response, next: NextFunction) {
-    req.hasBought = false;
-    const userId = req.user._id;
-    const productId = req.params['id'];
+    try {
+        if (!req.user) {
+            throw Error('Invalid session');
+        }
 
-    try {        
-        const hasBought = await productService.checkIfUserHasBoughtTheProduct(userId, productId);        
+        req.hasBought = false;
+        const userId = req.user._id;
+        const productId = req.params['id'];
+
+        const hasBought = await productService.checkIfUserHasBoughtTheProduct(userId, productId);
         if (hasBought) {
             throw Error('User has already bought the item');
         }
@@ -118,12 +134,16 @@ export async function authorizeBuyer(req: IRequest, res: Response, next: NextFun
 }
 
 export async function checkIfUserHasBoughtTheProduct(req: IRequest, res: Response, next: NextFunction) {
-    req.hasBought = false;
-    const userId = req.user._id;
-    const productId = req.params['id'];
+    try {
+        if (!req.user) {
+            throw Error('Invalid session');
+        }
 
-    try {        
-        const hasBought = await productService.checkIfUserHasBoughtTheProduct(userId, productId);        
+        req.hasBought = false;
+        const userId = req.user._id;
+        const productId = req.params['id'];
+
+        const hasBought = await productService.checkIfUserHasBoughtTheProduct(userId, productId);
         req.hasBought = hasBought;
         next();
     } catch (err) {

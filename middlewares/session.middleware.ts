@@ -48,12 +48,14 @@ export async function authorizeGuest(req: IRequest, res: Response, next: NextFun
     const token = req.headers['authorization'] || '';
     try {
         jwt.verify(token, process.env.JWT || 'weioweewniw') as IUserState;
-        res.status(HttpStatus.FORBIDDEN).json({
+        res.status(HttpStatus.FORBIDDEN).json([{
             msg: 'You must be logged out to perform this action',
-        }).end();
+        }]).end();
     } catch {
         next();
     }
+
+    return;
 }
 
 /**
