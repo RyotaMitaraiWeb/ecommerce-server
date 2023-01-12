@@ -49,7 +49,8 @@ const arrayErrorElement = {
 ```
 
 ### **HttpError**
-```constructor(message: string, status: number)```
+#### constructor(message: string, status: number)
+
 This class can be used instead of the standard ``Error`` constructor to throw errors. It allows you to define a status code, allowing you to handle different types of errors within a single request without resorting to complex error handling. Note that this does not work with Mongoose validation errors; for controllers that may throw such, you should ensure a "fallback" status code to the response object in case a validation error is thrown.
 
 ### **HttpStatus enum**
