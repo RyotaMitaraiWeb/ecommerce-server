@@ -66,6 +66,13 @@ export async function authorizeGuest(req: IRequest, res: Response, next: NextFun
  * use the authorizeUser or authorizeGuest middlewares instead 
  */
 export async function attachLoginStatusToRequest(req: IRequest, _res: Response, next: NextFunction) {
+    req.user = {
+        _id: '',
+        username: '',
+        palette: 'deepPurple',
+        theme: 'light',
+    };
+
     try {
         const token = req.headers['authorization'] || '';
 

@@ -17,14 +17,18 @@ export type sortCategoryOptions = {
 export interface IProductInput {
     name: string;
     price: number;
-    image: string;
+    image?: string;
 }
 
 /**
  * Returns the product that has the given id or null if there isn't such
  */
 async function findProductById(id: string | Types.ObjectId) {
-    return await Product.findById(id);
+    try {
+        return await Product.findById(id);
+    } catch {
+        return null;
+    }
 }
 
 /**
@@ -120,8 +124,10 @@ async function searchProductsByName(name: string, sort?: sortCategoryOptions, pa
 /**
  * Returns the amount of products in the database. Useful for pagination.
  */
-async function getProductCount() {
-    return await Product.find().count();
+async function getProductCount(name = '') {
+    return await Product.find({
+        name: RegExp(name, 'i')
+    }).count();
 }
 
 /**
@@ -143,11 +149,11 @@ async function buyProduct(userId: string | Types.ObjectId, productId: string | T
     }
 
     const duplicate = user.boughtProducts.find(bp => bp._id.toString() === productId)
-    
+
     if (duplicate) {
         throw new Error('Product has already been bought');
-    }    
-    
+    }
+
     if (userId.toString() === product.owner.toString()) {
         throw new Error('Owners cannot buy their own products');
     }
@@ -169,13 +175,17 @@ async function buyProduct(userId: string | Types.ObjectId, productId: string | T
  * Throws an error if the user does not exist.
  */
 async function checkIfUserHasBoughtTheProduct(userId: string | Types.ObjectId, productId: string | Types.ObjectId) {
-    const user = await User.findById(userId);
-    
-    if (user === null) throw Error('User does not exist');
-    
-    const boughtProduct = user.boughtProducts.find(bp => bp._id.equals(productId));
-    
-    return boughtProduct !== undefined && boughtProduct !== null;
+    try {
+        const user = await User.findById(userId);
+
+        if (user === null) throw Error('User does not exist');
+
+        const boughtProduct = user.boughtProducts.find(bp => bp._id.equals(productId));
+
+        return boughtProduct !== undefined && boughtProduct !== null;
+    } catch {
+        return false;
+    }
 }
 
 /**
@@ -184,12 +194,10 @@ async function checkIfUserHasBoughtTheProduct(userId: string | Types.ObjectId, p
  * Both IDs are converted to ObjectId before executing any operations.
  */
 async function checkIfUserIsTheOwnerOfTheProduct(userId: string | Types.ObjectId, productId: string | Types.ObjectId) {
-    userId = new Types.ObjectId(userId);
-    productId = new Types.ObjectId(productId);
-    const product = await Product.findById(productId).populate('owner');
+    const product = await Product.findById(productId);
 
     if (product === null) throw Error('Product does not exist');
-    return userId.equals(product.owner._id);
+    return userId.toString() === product.owner.toString();
 }
 
 export const productService = {

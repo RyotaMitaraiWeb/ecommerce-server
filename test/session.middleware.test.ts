@@ -19,7 +19,6 @@ interface IUserStateBody {
 }
 
 const jwt = jsonwebtoken;
-// eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiIxMjM0NTY3ODkwMTIiLCJ1c2VybmFtZSI6ImFiY2RlIiwicGFsZXR0ZSI6ImluZGlnbyIsInRoZW1lIjoibGlnaHQiLCJpYXQiOjE2NzMyOTk0MDYsImV4cCI6MTY3ODQ4MzQwNn0.M1j_RWXiz4NFvCWLBRqh3r9gWbmregdGC6CnjLvjAzo
 describe('Session middleware', async () => {
     let testDB = 'mongodb://127.0.0.1/ecommerce-test';
     let app: any;
@@ -120,7 +119,7 @@ describe('Session middleware', async () => {
             const user: IUserStateBody = await request(app)
                 .get(attachLoginStatusToRequestEndpoint)
                 .set('authorization', '')
-            expect(user.body).to.not.be.ok;
+            expect(user.body.username).to.not.be.ok;
         });
     });
 

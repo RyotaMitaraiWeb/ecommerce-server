@@ -145,6 +145,7 @@ export async function checkIfUserHasBoughtTheProduct(req: IRequest, res: Respons
 
         const hasBought = await productService.checkIfUserHasBoughtTheProduct(userId, productId);
         req.hasBought = hasBought;
+
         next();
     } catch (err) {
         const errors = mapErrors(err)
