@@ -195,6 +195,24 @@ describe('Product controller', async () => {
                 })
                 .expect(HttpStatus.UNAUTHORIZED);
         });
+
+        it('Fails to edit when the product does not exist', async () => {
+            const login = await request(app)
+                .post('/user/login')
+                .send({
+                    username: 'abcde',
+                    password: '123456',
+                });
+
+            await request(app)
+                .put('/product/123456789012')
+                .send({
+                    name: 'newname',
+                    price: 1,
+                })
+                .set('authorization', login.body.accessToken)
+                .expect(HttpStatus.NOT_FOUND);
+        });
     });
 
     describe('delete', async () => {
@@ -235,6 +253,20 @@ describe('Product controller', async () => {
             await request(app)
                 .del('/product/' + product1._id.toString())
                 .expect(HttpStatus.UNAUTHORIZED);
+        });
+
+        it('Fails to delete a product that does not exist', async () => {
+            const login = await request(app)
+                .post('/user/login')
+                .send({
+                    username: 'abcde',
+                    password: '123456',
+                });
+
+            await request(app)
+                .del('/product/123456789012')
+                .set('authorization', login.body.accessToken)
+                .expect(HttpStatus.NOT_FOUND);
         });
     });
 
@@ -426,6 +458,20 @@ describe('Product controller', async () => {
             await request(app)
                 .post('/product/' + product1._id.toString() + '/buy')
                 .expect(HttpStatus.UNAUTHORIZED);
+        });
+
+        it('Does not buy a product that does not exist', async () => {
+            const login = await request(app)
+                .post('/user/login')
+                .send({
+                    username: 'abcde',
+                    password: '123456',
+                });
+
+            await request(app)
+                .post('/product/123456789012/buy')
+                .set('authorization', login.body.accessToken)
+                .expect(HttpStatus.NOT_FOUND);
         });
     });
 

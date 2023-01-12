@@ -127,7 +127,14 @@ describe('Session middleware', async () => {
                 .get(authorizeOwnerEndpoint + '/' + product._id)
                 .set('authorization', fakeToken)
                 .expect(HttpStatus.FORBIDDEN);
-        })
+        });
+
+        it('Returns 404 if the product does not exist', async () => {
+            await request(app)
+                .get(authorizeOwnerEndpoint + '/123456789012')
+                .set('authorization', fakeToken)
+                .expect(HttpStatus.NOT_FOUND);
+        });
     })
 
     describe('checkIfUserIsTheCreatorOfTheProduct', async () => {
@@ -153,6 +160,13 @@ describe('Session middleware', async () => {
                 .set('authorization', fakeToken);
 
             expect(res.body).to.deep.equal({ isOwner: false });
+        });
+
+        it('Aborts request if the product does not exist', async () => {
+            await request(app)
+                .get(creatorVerificationEndpoint + '/123456789012')
+                .set('authorization', fakeToken)
+                .expect(HttpStatus.NOT_FOUND);
         });
     });
 
@@ -215,6 +229,13 @@ describe('Session middleware', async () => {
                 .get(authorizeBuyerEndpoint + '/' + product._id)
                 .set('authorization', fakeToken)
                 .expect(HttpStatus.FORBIDDEN);
+        });
+
+        it('Aborts the request if the product does not exist', async () => {
+            await request(app)
+                .get(authorizeBuyerEndpoint + '/123456789012')
+                .set('authorization', fakeToken)
+                .expect(HttpStatus.NOT_FOUND);
         });
     });
 
