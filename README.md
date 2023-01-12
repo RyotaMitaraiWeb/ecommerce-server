@@ -48,6 +48,24 @@ const arrayErrorElement = {
 }
 ```
 
+### **HttpError**
+``constructor(message: string, status: number)``
+This class can be used instead of the standard ``Error`` constructor to throw errors. It allows you to define a status code, allowing you to handle different types of errors within a single request without resorting to complex error handling. Note that this does not work with Mongoose validation errors; for controllers that may throw such, you should ensure a "fallback" status code to the response object in case a validation error is thrown.
+
+### **HttpStatus enum**
+Provides an easy-to-use interface to access status codes. This only supports status codes that are used at least once within the application; should a different one be needed, it can be added to the enum.
+
+### **IRequest**
+```typescript
+interface IRequest extends Request {
+    user?: IUserState;
+    product?: IProduct;
+    isOwner?: boolean;
+    hasBought?: boolean;
+}
+```
+This interface extends Express's ``Request`` object by giving it additional properties. Each property is optional, allowing you to plug it in any middleware without type errors.
+
 ## ``test``
 This folder contains tests for each functionality of the server. Each test creates and drops the database, ensuring a clean slate for each test.
 
