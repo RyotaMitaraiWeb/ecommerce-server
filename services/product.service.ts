@@ -1,6 +1,8 @@
 import { Types } from "mongoose";
 import Product from "../src/models/Product.model.js";
 import User from "../src/models/User.model.js";
+import { HttpError } from "../util/HttpError.js";
+import { HttpStatus } from "../util/httpstatus.enum.js";
 import { transactionService } from "./transaction.service.js";
 
 export type sortCategory = 'asc' | 'desc';
@@ -39,7 +41,7 @@ async function createProduct(product: IProductInput, userId: string | Types.Obje
     const user = await User.findById(userId);
 
     if (user === null) {
-        throw Error('User does not exist');
+        throw new HttpError('User does not exist', HttpStatus.NOT_FOUND);
     }
 
     const newProduct = new Product({
@@ -73,7 +75,7 @@ async function deleteProduct(id: string | Types.ObjectId) {
     });
 
     if (product === null) {
-        throw Error('Product does not exist');
+        throw new HttpError('Product does not exist', HttpStatus.NOT_FOUND);
     }
 
     return product;
@@ -141,21 +143,21 @@ async function buyProduct(userId: string | Types.ObjectId, productId: string | T
     const user = await User.findById(userId);
 
     if (product === null) {
-        throw Error('Product does not exist');
+        throw new HttpError('Product does not exist', HttpStatus.NOT_FOUND);
     }
 
     if (user === null) {
-        throw Error('User does not exist');
+        throw new HttpError('User does not exist', HttpStatus.NOT_FOUND);
     }
 
     const duplicate = user.boughtProducts.find(bp => bp._id.toString() === productId)
 
     if (duplicate) {
-        throw new Error('Product has already been bought');
+        throw new HttpError('Product has already been bought', HttpStatus.FORBIDDEN);
     }
 
     if (userId.toString() === product.owner.toString()) {
-        throw new Error('Owners cannot buy their own products');
+        throw new HttpError('Owners cannot buy their own products', HttpStatus.FORBIDDEN);
     }
 
     product.buyers.push(user);
@@ -178,7 +180,7 @@ async function checkIfUserHasBoughtTheProduct(userId: string | Types.ObjectId, p
     try {
         const user = await User.findById(userId);
 
-        if (user === null) throw Error('User does not exist');
+        if (user === null) throw new HttpError('User does not exist', HttpStatus.NOT_FOUND);
 
         const boughtProduct = user.boughtProducts.find(bp => bp._id.equals(productId));
 
@@ -196,7 +198,7 @@ async function checkIfUserHasBoughtTheProduct(userId: string | Types.ObjectId, p
 async function checkIfUserIsTheOwnerOfTheProduct(userId: string | Types.ObjectId, productId: string | Types.ObjectId) {
     const product = await Product.findById(productId);
 
-    if (product === null) throw Error('Product does not exist');
+    if (product === null) throw new HttpError('Product does not exist', HttpStatus.NOT_FOUND);
     return userId.toString() === product.owner.toString();
 }
 

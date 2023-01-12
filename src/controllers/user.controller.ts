@@ -7,6 +7,7 @@ import { mapErrors } from '../../util/errorMapper.js';
 import { IRequest } from '../../util/IRequest';
 import { HttpStatus } from '../../util/httpstatus.enum.js';
 import { IUser, palette, theme } from '../models/User.model.js';
+import { HttpError } from '../../util/HttpError.js';
 
 const router = express.Router();
 const jwt = jsonwebtoken;
@@ -37,9 +38,9 @@ router.post('/user/register', authorizeGuest, async (req: IRequest, res: Respons
             accessToken
         });
 
-    } catch (err) {
+    } catch (err: any) {
         const errors = mapErrors(err);
-        res.status(HttpStatus.BAD_REQUEST).json(errors).end();
+        res.status(err.status || HttpStatus.BAD_REQUEST).json(errors).end();
     }
 });
 
@@ -58,9 +59,9 @@ router.post('/user/login', authorizeGuest, async (req: IRequest, res: Response) 
             accessToken
         });
 
-    } catch (err) {
+    } catch (err: any) {
         const errors = mapErrors(err);
-        res.status(HttpStatus.UNAUTHORIZED).json(errors).end();
+        res.status(err.status).json(errors).end();
     }
 });
 
@@ -71,45 +72,45 @@ router.delete('/user/logout', authorizeUser, async (_req, res: Response) => {
 router.get('/user/transactions', authorizeUser, async (req: IRequest, res: Response) => {
     try {
         if (!req.user) {
-            throw Error('Something went wrong with your session')
+            throw new HttpError('Something went wrong with your session', HttpStatus.UNAUTHORIZED)
         }
         const transactions = await transactionService.getUserTransactions(req.user._id);
         res.status(HttpStatus.OK).json(transactions).end();
-    } catch (err) {
+    } catch (err: any) {
         const errors = mapErrors(err);
-        res.status(HttpStatus.BAD_REQUEST).json(errors).end();
+        res.status(err.status).json(errors).end();
     }
 });
 
 router.put('/user/theme', authorizeUser, async (req: IRequest, res: Response) => {
     try {
         if (!req.user) {
-            throw Error('Something went wrong with your session')
+            throw new HttpError('Something went wrong with your session', HttpStatus.UNAUTHORIZED)
         }
 
         const theme: theme = req.body.theme;
         await userService.changeTheme(req.user._id, theme);
 
         res.status(HttpStatus.OK).json({ theme }).end();
-    } catch (err) {
+    } catch (err: any) {
         const errors = mapErrors(err);
-        res.status(HttpStatus.BAD_REQUEST).json(errors).end();
+        res.status(err.status || HttpStatus.BAD_REQUEST).json(errors).end();
     }
 });
 
 router.put('/user/palette', authorizeUser, async (req: IRequest, res: Response) => {
     try {
         if (!req.user) {
-            throw Error('Something went wrong with your session')
+            throw new HttpError('Something went wrong with your session', HttpStatus.UNAUTHORIZED)
         }
 
         const palette: palette = req.body.palette;
         await userService.changePalette(req.user._id, palette);
 
         res.status(HttpStatus.OK).json({ palette }).end();
-    } catch (err) {
+    } catch (err: any) {
         const errors = mapErrors(err);
-        res.status(HttpStatus.BAD_REQUEST).json(errors).end();
+        res.status(err.status || HttpStatus.BAD_REQUEST).json(errors).end();
     }
 });
 

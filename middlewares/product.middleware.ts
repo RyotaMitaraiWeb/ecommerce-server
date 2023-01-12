@@ -1,6 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { productService } from '../services/product.service.js';
 import { mapErrors } from '../util/errorMapper.js';
+import { HttpError } from '../util/HttpError.js';
 import { HttpStatus } from '../util/httpstatus.enum.js';
 import { IRequest } from '../util/IRequest.js';
 
@@ -14,14 +15,14 @@ export async function attachProductToRequest(req: IRequest, res: Response, next:
     try {
         const product = await productService.findProductById(productId);
         if (!product) {
-            throw Error('Product does not exist');
+            throw new HttpError('Product does not exist', HttpStatus.NOT_FOUND);
         }
 
         req.product = product;
         next();
-    } catch (err) {
+    } catch (err: any) {
         const errors = mapErrors(err);
-        res.status(HttpStatus.NOT_FOUND).json(errors).end();
+        res.status(err.status).json(errors).end();
     }
 }
 
@@ -36,7 +37,7 @@ export async function attachProductToRequest(req: IRequest, res: Response, next:
 export async function authorizeOwner(req: IRequest, res: Response, next: NextFunction) {
     try {
         if (!req.user) {
-            throw Error('Invalid session');
+            throw new HttpError('Invalid session', HttpStatus.UNAUTHORIZED);
         }
         
         const userId = req.user._id;
@@ -46,21 +47,25 @@ export async function authorizeOwner(req: IRequest, res: Response, next: NextFun
             if (ownerId.toString() === userId) {
                 next();
             } else {
-                throw Error('You must be the creator of the product to perform this action');
+                throw new HttpError('You must be the creator of the product to perform this action', HttpStatus.FORBIDDEN);
             }
         } else {
             const product = await productService.findProductById(productId);
+            if (!product) {
+                throw new HttpError('Product does not exist', HttpStatus.NOT_FOUND)
+            }
             if (product?.owner.toString() === userId) {
                 req.product = product;
 
                 next();
             } else {
-                throw Error('You must be the creator of the product to perform this action');
+                throw new HttpError('You must be the creator of the product to perform this action', HttpStatus.FORBIDDEN);
             }
         }
-    } catch (err) {
+    } catch (err: any) {
         const errors = mapErrors(err);
-        res.status(HttpStatus.FORBIDDEN).json(errors).end();
+        
+        res.status(err.status).json(errors).end();
     }
 }
 
@@ -73,7 +78,7 @@ export async function checkIfUserIsTheCreatorOfTheProduct(req: IRequest, res: Re
 
     try {
         if (!req.user) {
-            throw Error('Invalid session');
+            throw new HttpError('Invalid session', HttpStatus.UNAUTHORIZED);
         }
 
         req.isOwner = false;
@@ -86,6 +91,10 @@ export async function checkIfUserIsTheCreatorOfTheProduct(req: IRequest, res: Re
             }
         } else {
             const product = await productService.findProductById(productId);
+            
+            if (!product) {
+                throw new HttpError('Product does not exist', HttpStatus.NOT_FOUND)
+            }
 
             if (product?.owner.toString() === userId) {
                 req.product = product;
@@ -94,9 +103,9 @@ export async function checkIfUserIsTheCreatorOfTheProduct(req: IRequest, res: Re
         }
 
         next();
-    } catch (err) {
+    } catch (err: any) {
         const errors = mapErrors(err)
-        res.status(HttpStatus.UNAUTHORIZED).json(errors).end();
+        res.status(err.status).json(errors).end();
     }
 }
 
@@ -109,7 +118,7 @@ export async function checkIfUserIsTheCreatorOfTheProduct(req: IRequest, res: Re
 export async function authorizeBuyer(req: IRequest, res: Response, next: NextFunction) {
     try {
         if (!req.user) {
-            throw Error('Invalid session');
+            throw new HttpError('Invalid session', HttpStatus.UNAUTHORIZED);
         }
 
         req.hasBought = false;
@@ -118,25 +127,25 @@ export async function authorizeBuyer(req: IRequest, res: Response, next: NextFun
 
         const hasBought = await productService.checkIfUserHasBoughtTheProduct(userId, productId);
         if (hasBought) {
-            throw Error('User has already bought the item');
+            throw new HttpError('User has already bought the item', HttpStatus.FORBIDDEN);
         }
 
         if (req.isOwner) {
-            throw Error('Creators cannot buy their own products');
+            throw new HttpError('Creators cannot buy their own products', HttpStatus.FORBIDDEN);
         }
 
         req.hasBought = hasBought;
         next();
-    } catch (err) {
+    } catch (err: any) {
         const errors = mapErrors(err)
-        res.status(HttpStatus.FORBIDDEN).json(errors).end();
+        res.status(err.status).json(errors).end();
     }
 }
 
 export async function checkIfUserHasBoughtTheProduct(req: IRequest, res: Response, next: NextFunction) {
     try {
         if (!req.user) {
-            throw Error('Invalid session');
+            throw new HttpError('Invalid session', HttpStatus.UNAUTHORIZED);
         }
 
         req.hasBought = false;
@@ -147,8 +156,8 @@ export async function checkIfUserHasBoughtTheProduct(req: IRequest, res: Respons
         req.hasBought = hasBought;
 
         next();
-    } catch (err) {
+    } catch (err: any) {
         const errors = mapErrors(err)
-        res.status(HttpStatus.BAD_REQUEST).json(errors).end();
+        res.status(err.status).json(errors).end();
     }
 }

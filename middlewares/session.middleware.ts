@@ -3,6 +3,7 @@ import { Response, NextFunction } from 'express';
 import { HttpStatus } from '../util/httpstatus.enum.js';
 import { palette, theme } from '../src/models/User.model.js';
 import { IRequest } from '../util/IRequest.js';
+import { HttpError } from '../util/HttpError.js';
 
 const jwt = jsonwebtoken;
 const blacklist = new Set<string>();
@@ -25,14 +26,14 @@ export async function authorizeUser(req: IRequest, res: Response, next: NextFunc
         const token = req.headers['authorization'] || '';
 
         if (blacklist.has(token)) {
-            throw Error('Invalid token');
+            throw new HttpError('Invalid token', HttpStatus.UNAUTHORIZED);
         }
 
         const user: IUserState = jwt.verify(token, process.env.JWT || 'weioweewniw') as IUserState;
         req.user = user;
         next();
 
-    } catch (err) {
+    } catch (err: any) {
         res.status(HttpStatus.UNAUTHORIZED).json([{
             msg: 'Invalid token',
         }]).end();

@@ -7,6 +7,7 @@ import { attachProductToRequest, authorizeBuyer, authorizeOwner } from '../../mi
 import { productService } from '../../services/product.service.js';
 import { IProduct } from '../models/Product.model.js';
 import { checkIfUserHasBoughtTheProduct, checkIfUserIsTheCreatorOfTheProduct } from '../../middlewares/product.middleware.js';
+import { HttpError } from '../../util/HttpError.js';
 const router = express.Router();
 
 function extractDataFromProduct(product: IProduct) {
@@ -71,7 +72,7 @@ router.get('/product/:id', attachLoginStatusToRequest, attachProductToRequest,
 router.post('/product', authorizeUser, async (req: IRequest, res: Response) => {
     try {
         if (!req.user) {
-            throw Error('Something went wrong with your session');
+            throw new HttpError('Something went wrong with your session', HttpStatus.UNAUTHORIZED);
         }
 
         const { name, price, image } = req.body;
@@ -79,9 +80,9 @@ router.post('/product', authorizeUser, async (req: IRequest, res: Response) => {
         const data = extractDataFromProduct(product);
 
         res.status(HttpStatus.CREATED).json(data).end();
-    } catch (err) {
+    } catch (err: any) {
         const errors = mapErrors(err);
-        res.status(HttpStatus.BAD_REQUEST).json(errors).end();
+        res.status(err.status || HttpStatus.BAD_REQUEST).json(errors).end();
     }
 });
 
@@ -91,13 +92,13 @@ router.put('/product/:id', authorizeUser, authorizeOwner, async (req: IRequest, 
         const { name, price } = req.body;
         const product = await productService.editProduct(id, { name, price });
         if (product === null) {
-            throw Error('Product does not exist');
+            throw new HttpError('Product does not exist', HttpStatus.NOT_FOUND);
         }
 
         res.status(HttpStatus.OK).json({ id }).end();
-    } catch (err) {
+    } catch (err: any) {
         const errors = mapErrors(err);
-        res.status(HttpStatus.BAD_REQUEST).json(errors).end();
+        res.status(err.status || HttpStatus.BAD_REQUEST).json(errors).end();
     }
 
 });
@@ -107,13 +108,13 @@ router.delete('/product/:id', authorizeUser, authorizeOwner, async (req: IReques
         const id = req.params['id'];
         const product = await productService.deleteProduct(id);
         if (product === null) {
-            throw Error('Product does not exist');
+            throw new HttpError('Product does not exist', HttpStatus.NOT_FOUND);
         }
 
         res.status(HttpStatus.OK).json({ id }).end();
-    } catch (err) {
+    } catch (err: any) {
         const errors = mapErrors(err);
-        res.status(HttpStatus.NOT_FOUND).json(errors).end();
+        res.status(err.status).json(errors).end();
     }
 
 });
@@ -121,7 +122,7 @@ router.delete('/product/:id', authorizeUser, authorizeOwner, async (req: IReques
 router.post('/product/:id/buy', authorizeUser, authorizeBuyer, async (req: IRequest, res: Response) => {
     try {
         if (!req.user) {
-            throw Error('Something went wrong with your session');
+            throw new HttpError('Something went wrong with your session', HttpStatus.UNAUTHORIZED);
         }
 
         const userId = req.user._id.toString();
@@ -131,9 +132,9 @@ router.post('/product/:id/buy', authorizeUser, authorizeBuyer, async (req: IRequ
         res.status(HttpStatus.OK).json({
             id: productId,
         }).end();
-    } catch (err) {
+    } catch (err: any) {
         const errors = mapErrors(err);
-        res.status(HttpStatus.FORBIDDEN).json(errors).end();
+        res.status(err.status).json(errors).end();
     }
 });
 
