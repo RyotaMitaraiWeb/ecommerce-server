@@ -17,6 +17,11 @@ function extractDataFromProduct(product: IProduct) {
     return { name, price, image, _id }
 }
 
+router.get('/product/:id/isOwner', attachLoginStatusToRequest, authorizeOwner, (req: IRequest, res: Response) => {
+    const data = extractDataFromProduct(req.product as IProduct);
+    res.status(HttpStatus.OK).json(data).end();
+});
+
 router.get('/product/all', async (req: IRequest, res: Response) => {
     const by = req.query['by'];
     const sort = req.query['sort'];

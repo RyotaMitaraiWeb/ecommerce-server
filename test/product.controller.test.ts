@@ -475,6 +475,50 @@ describe('Product controller', async () => {
         });
     });
 
+    describe('/isOwner', async () => {
+        it('Verifies that the user is the owner', async () => {
+            const login = await request(app)
+                .post('/user/login')
+                .send({
+                    username: 'abcde',
+                    password: '123456',
+                });
+
+            await request(app)
+                .get('/product/' + product1._id.toString() + '/isOwner')
+                .set('authorization', login.body.accessToken)
+                .expect(HttpStatus.OK);
+        });
+
+        it('Verifies that the user is NOT the owner', async () => {
+            const login = await request(app)
+                .post('/user/login')
+                .send({
+                    username: 'abcde',
+                    password: '123456',
+                });
+
+            await request(app)
+                .get('/product/' + product2._id.toString() + '/isOwner')
+                .set('authorization', login.body.accessToken)
+                .expect(HttpStatus.FORBIDDEN);
+        });
+
+        it('Returns 404 if the product does not exist', async () => {
+            const login = await request(app)
+                .post('/user/login')
+                .send({
+                    username: 'abcde',
+                    password: '123456',
+                });
+
+            await request(app)
+                .get('/product/123456789012/isOwner')
+                .set('authorization', login.body.accessToken)
+                .expect(HttpStatus.NOT_FOUND);
+        });
+    });
+
     afterEach(async () => {
         await mongoose.connection.dropDatabase();
     });

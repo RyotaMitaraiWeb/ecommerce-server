@@ -232,6 +232,9 @@ To have a user buy a product, send an authorized POST request to ``/product/:id/
 
 Refer to the ``authorizeBuyer`` middleware method for more information regarding how the purchase is validated.
 
+#### Verifying ownership
+You can send an authorized request to ``/product/:id/isOwner``, where ``:id`` is the product's id. If the user is the owner, the server returns a status code of 200 with the product attached to the response, 404 if the product does not exist, or 403 otherwise.
+
 ## ``util``
 This folder contains utility functions to make certain tasks easier
 
