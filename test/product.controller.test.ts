@@ -73,6 +73,131 @@ describe('Product controller', async () => {
         });
     });
 
+    describe('/own', async () => {
+        it('Retrieves user\'s products successfully', async () => {
+            const login = await request(app)
+                .post('/user/login')
+                .send({
+                    username: 'abcde',
+                    password: '123456',
+                });
+
+            const res = await request(app)
+                .get('/product/own')
+                .set('authorization', login.body.accessToken)
+                .expect(HttpStatus.OK);
+
+            expect(res.body.products.length).to.equal(1);
+            expect(res.body.total).to.equal(1);
+
+        });
+
+        it('Retrieves a paginated list of user\'s products', async () => {
+            process.env.PRODUCTS_PER_PAGE = '1';
+            const login = await request(app)
+                .post('/user/login')
+                .send({
+                    username: 'abcde',
+                    password: '123456',
+                });
+
+            await Product.create({
+                name: 'abcde',
+                price: 1,
+                image: 'a',
+                owner: login.body._id,
+            });
+
+            const res = await request(app)
+                .get('/product/own')
+                .query({
+                    page: 1,
+                })
+                .set('authorization', login.body.accessToken);
+
+            expect(res.body.products.length).to.equal(1);
+            expect(res.body.total).to.equal(2);
+        });
+
+        it('Returns a sorted list of user\'s products', async () => {
+            const login = await request(app)
+                .post('/user/login')
+                .send({
+                    username: 'abcde',
+                    password: '123456',
+                });
+
+                await Product.create({
+                    name: 'bacde',
+                    price: 1,
+                    image: 'a',
+                    owner: login.body._id,
+                });
+
+                await Product.create({
+                    name: 'ABCDE',
+                    price: 1,
+                    image: 'a',
+                    owner: login.body._id,
+                });
+
+                const res = await request(app)
+                .get('/product/own')
+                .query({
+                    sort: 'asc',
+                    by: 'name',
+                })
+                .set('authorization', login.body.accessToken);
+
+            expect(res.body.products.length).to.equal(3);
+            expect(res.body.products[0].name).to.equal('abcde');
+            expect(res.body.products[1].name).to.equal('ABCDE');
+        });
+
+        it('Returns a sorted and paginated list of user\'s products', async () => {
+            process.env.PRODUCTS_PER_PAGE = '1';
+            const login = await request(app)
+                .post('/user/login')
+                .send({
+                    username: 'abcde',
+                    password: '123456',
+                });
+
+                await Product.create({
+                    name: 'bacde',
+                    price: 1,
+                    image: 'a',
+                    owner: login.body._id,
+                });
+
+                await Product.create({
+                    name: 'ABCDE',
+                    price: 1,
+                    image: 'a',
+                    owner: login.body._id,
+                });
+
+                const res = await request(app)
+                .get('/product/own')
+                .query({
+                    sort: 'desc',
+                    by: 'name',
+                    page: '1',
+                })
+                .set('authorization', login.body.accessToken);
+
+            expect(res.body.products.length).to.equal(1);
+            expect(res.body.total).to.equal(3);
+            expect(res.body.products[0].name).to.equal('bacde');
+        });
+
+        it('Returns Unauthorized status when the user is not logged in', async () => {
+            await request(app)
+                .get('/product/own')
+                .expect(HttpStatus.UNAUTHORIZED);
+        });
+    });
+
     describe('create', async () => {
         it('Creates the product', async () => {
             const login = await request(app)
