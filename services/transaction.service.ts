@@ -15,14 +15,15 @@ async function createTransaction(product: IProduct | Types.ObjectId, buyer: IUse
 
 /**
  * Finds all of the given user's transactions.
- * Pass false as a second argument if you don't want to load each product's properties
+ * Pass false as a second argument if you don't want to load each product's properties.
+ * The populated products include only the ``_id``, ``name``, and ``price`` properties.
  */
 async function getUserTransactions(userId: string | Types.ObjectId, populate = true) {
     if (!populate) {
         return await Transaction.find({ buyer: userId });
     }
     
-    return await Transaction.find({ buyer: userId }).populate('product');
+    return await Transaction.find({ buyer: userId }).populate('product', 'name price');
 }
 
 export const transactionService = {
