@@ -22,6 +22,38 @@ router.get('/product/:id/isOwner', attachLoginStatusToRequest, authorizeOwner, (
     res.status(HttpStatus.OK).json(data).end();
 });
 
+router.get('/product/own', authorizeUser, async (req: IRequest, res: Response) => {
+    try {
+        if (!req.user) {
+            throw new HttpError('Something went wrong with your session', HttpStatus.UNAUTHORIZED)
+        }
+
+        const userId = req.user._id;
+        const by = req.query['by'];
+        const sort = req.query['sort'];
+        const page = Number(req.query['page']) || 0;
+        let sortOptions = undefined;
+
+        if (by && sort) {
+            sortOptions = {
+                [by as string]: sort
+            }
+        }
+
+        const products = await productService.getUserProducts(userId, sortOptions as any, page);
+        const total = await productService.getUserProductsCount(userId);
+
+        res.status(HttpStatus.OK).json({
+            products,
+            total
+        }).end();
+        
+    } catch (err: any) {
+        const errors = mapErrors(err);
+        res.status(err.status).json(errors).end();
+    }
+});
+
 router.get('/product/all', async (req: IRequest, res: Response) => {
     const by = req.query['by'];
     const sort = req.query['sort'];
@@ -56,7 +88,7 @@ router.get('/product/search', async (req: IRequest, res: Response) => {
 
     const products = await productService.searchProductsByName(name, sortOptions as any, page);
     const total = await productService.getProductCount(name);
-    
+
     res.status(HttpStatus.OK).json({
         products,
         total,
