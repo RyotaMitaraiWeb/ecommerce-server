@@ -34,6 +34,48 @@ async function findProductById(id: string | Types.ObjectId) {
 }
 
 /**
+ * Returns an array of products that were created by the user with the provided id.
+ * The result can optionally be sorted and paginated (default six products per page).
+ 
+ * If you want to paginate the results but not sort them, pass ``undefined`` as the second argumnet
+ * 
+ */
+async function getUserProducts(userId: string | Types.ObjectId, sort?: sortCategoryOptions, page = 0, limit?: number) {
+    try {
+        if (page === 0) return await Product
+            .find({ owner: userId})
+            .select('name price image')
+            .collation({ locale: 'en'})
+            .sort(sort);
+
+        limit = limit || Number(process.env.PRODUCTS_PER_PAGE);
+
+        const products = await Product
+            .find({ owner: userId })
+            .collation({ locale: 'en'})
+            .limit(limit)
+            .skip(limit * (page - 1))
+            .sort(sort)
+            .select('name price image');
+
+        return products;
+    } catch {
+        throw new HttpError('User does not exist', HttpStatus.NOT_FOUND);
+    }
+}
+
+/**
+ * Returns the amount of existing products that were created by the user with the provided id.
+ */
+async function getUserProductsCount(userId: string | Types.ObjectId) {
+    try {
+        return Product.find({ owner: userId }).count();
+    } catch {
+        throw new HttpError('User does not exist', HttpStatus.NOT_FOUND);
+    }
+}
+
+/**
  * Adds the product to the database and updates the creator's products property or throws an error
  * if the creation is invalid.
  */
@@ -204,6 +246,8 @@ async function checkIfUserIsTheOwnerOfTheProduct(userId: string | Types.ObjectId
 
 export const productService = {
     findProductById,
+    getUserProducts,
+    getUserProductsCount,
     createProduct,
     editProduct,
     deleteProduct,

@@ -187,7 +187,80 @@ describe('productService', () => {
             const count = await productService.getProductCount();
             expect(count).to.equal(0);
         });
-    })
+    });
+
+    describe('getUserProducts', async () => {
+        it('Returns a list of the user\'s products', async () => {
+            const products = await productService.getUserProducts(userId);
+            expect(products.length).to.equal(1);
+        });
+
+        it('Returns a paginated list of the user\'s products', async () => {
+            await Product.create({
+                name: 'bacde',
+                price: 1,
+                image: 'a',
+                owner: userId,
+            });
+
+            await Product.create({
+                name: 'ABCDE',
+                price: 1,
+                image: 'a',
+                owner: userId,
+            });
+
+            process.env.PRODUCTS_PER_PAGE = '1';
+
+            const products = await productService.getUserProducts(userId, undefined, 1);
+            expect(products.length).to.equal(1);
+        });
+
+        it('Returns a sorted list of the user\'s products', async () => {
+            await Product.create({
+                name: 'bacde',
+                price: 1,
+                image: 'a',
+                owner: userId,
+            });
+
+            await Product.create({
+                name: 'ABCDE',
+                price: 1,
+                image: 'a',
+                owner: userId,
+            });
+
+            const products = await productService.getUserProducts(userId, {
+                name: 'asc',
+            });
+
+            expect(products.length).to.equal(3);
+            expect(products[2].name).to.equal('bacde');
+        });
+
+        it('Returns a sorted and paginated list of the user\'s products', async () => {
+            await Product.create({
+                name: 'bacde',
+                price: 1,
+                image: 'a',
+                owner: userId,
+            });
+
+            await Product.create({
+                name: 'ABCDE',
+                price: 1,
+                image: 'a',
+                owner: userId,
+            });
+
+            process.env.PRODUCTS_PER_PAGE = '1';
+
+            const products = await productService.getUserProducts(userId, { name: 'desc' }, 1);
+            expect(products.length).to.equal(1);
+            expect(products[0].name).to.equal('bacde');
+        });
+    });
 
     describe('createProduct', async () => {
         it('Creates the product successfully', async () => {
