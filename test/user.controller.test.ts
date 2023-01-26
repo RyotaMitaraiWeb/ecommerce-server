@@ -53,6 +53,20 @@ describe('User controller', async () => {
         await user2.save();
     });
 
+    describe('/:username', async () => {
+        it('Returns OK status if the username exists', async () => {
+            await request(app)
+                .get('/user/abcde')
+                .expect(HttpStatus.OK);
+        });
+
+        it('Returns Not Found status when the username does not exist', async () => {
+            await request(app)
+                .get('/user/a')
+                .expect(HttpStatus.NOT_FOUND);
+        })
+    })
+
     describe('/register', async () => {
         it('Registers successfully', async () => {
             const res = await request(app)
@@ -206,8 +220,8 @@ describe('User controller', async () => {
             const res = await request(app)
                 .get('/user/transactions')
                 .set('authorization', login.body.accessToken)
-                .expect(HttpStatus.OK);            
-            
+                .expect(HttpStatus.OK);
+
             expect(res.body.length).to.equal(1);
         });
     });

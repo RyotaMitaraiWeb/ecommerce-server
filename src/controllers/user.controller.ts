@@ -1,4 +1,4 @@
-import express, { Response } from 'express';
+import express, { Request, Response } from 'express';
 import { userService } from '../../services/user.service.js';
 import { transactionService } from '../../services/transaction.service.js';
 import jsonwebtoken from 'jsonwebtoken';
@@ -21,7 +21,37 @@ function extractDataFromUserForJwtToken(user: IUser) {
 
 router.get('/user', authorizeUser, async (req: IRequest, res: Response) => {
     res.status(HttpStatus.OK).json(req.user).end();
-})
+});
+
+router.get('/user/transactions', authorizeUser, async (req: IRequest, res: Response) => {
+    try {
+        if (!req.user) {
+            throw new HttpError('Something went wrong with your session', HttpStatus.UNAUTHORIZED)
+        }
+        const transactions = await transactionService.getUserTransactions(req.user._id);
+        res.status(HttpStatus.OK).json(transactions).end();
+    } catch (err: any) {
+        const errors = mapErrors(err);
+        res.status(err.status).json(errors).end();
+    }
+});
+
+router.get('/user/:username', async (req: Request, res: Response) => {
+    const username = req.params['username'];
+    const user = await userService.findUserByUsername(username);
+    try {
+        if (user) {
+            res.status(HttpStatus.OK).json({}).end();
+        } else {
+            throw new HttpError('User does not exist', HttpStatus.NOT_FOUND);
+        }
+    } catch (err: any) {
+        const errors = mapErrors(err);
+        res.status(err.status).json(errors).end();
+    }
+
+
+});
 
 router.post('/user/register', authorizeGuest, async (req: IRequest, res: Response) => {
     try {
@@ -67,19 +97,6 @@ router.post('/user/login', authorizeGuest, async (req: IRequest, res: Response) 
 
 router.delete('/user/logout', authorizeUser, async (_req, res: Response) => {
     res.status(HttpStatus.NO_CONTENT).json({}).end();
-});
-
-router.get('/user/transactions', authorizeUser, async (req: IRequest, res: Response) => {
-    try {
-        if (!req.user) {
-            throw new HttpError('Something went wrong with your session', HttpStatus.UNAUTHORIZED)
-        }
-        const transactions = await transactionService.getUserTransactions(req.user._id);
-        res.status(HttpStatus.OK).json(transactions).end();
-    } catch (err: any) {
-        const errors = mapErrors(err);
-        res.status(err.status).json(errors).end();
-    }
 });
 
 router.put('/user/theme', authorizeUser, async (req: IRequest, res: Response) => {
