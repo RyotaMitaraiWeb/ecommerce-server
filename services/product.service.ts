@@ -131,7 +131,8 @@ async function deleteProduct(id: string | Types.ObjectId) {
  * If page is passed, but not limit, it will use process.env.PAGES_PER_ROUND in limit's place.
  */
 async function findAllProducts(sort?: sortCategoryOptions, page = 0, limit?: number) {
-    if (page === 0) return await Product.find().sort(sort);
+    try {
+        if (page === 0) return await Product.find().sort(sort);
 
     limit = limit || Number(process.env.PRODUCTS_PER_PAGE);
 
@@ -140,6 +141,9 @@ async function findAllProducts(sort?: sortCategoryOptions, page = 0, limit?: num
         .sort(sort)
         .limit(limit)
         .skip(limit * (page - 1));
+    } catch {
+        throw new HttpError('Invalid option', HttpStatus.BAD_REQUEST);
+    }
 }
 
 /**
@@ -151,18 +155,23 @@ async function findAllProducts(sort?: sortCategoryOptions, page = 0, limit?: num
  * If page is passed, but not limit, it will use process.env.PAGES_PER_ROUND in limit's place.
  */
 async function searchProductsByName(name: string, sort?: sortCategoryOptions, page = 0, limit?: number) {
-    if (page === 0) return await Product.find({
-        name: RegExp(name, 'i'),
-    }).sort(sort);
-
-    limit = limit || Number(process.env.PRODUCTS_PER_PAGE);
-
-    return await Product.find({
-        name: RegExp(name, 'i'),
-    })
-        .sort(sort)
-        .limit(limit)
-        .skip(limit * (page - 1));
+    try {
+        if (page === 0) return await Product.find({
+            name: RegExp(name, 'i'),
+        }).sort(sort);
+    
+        limit = limit || Number(process.env.PRODUCTS_PER_PAGE);
+    
+        return await Product.find({
+            name: RegExp(name, 'i'),
+        })
+            .collation({ locale: 'en' })
+            .sort(sort)
+            .limit(limit)
+            .skip(limit * (page - 1));
+    } catch {
+        throw new HttpError('Invalid option', HttpStatus.BAD_REQUEST);
+    }
 }
 
 /**
