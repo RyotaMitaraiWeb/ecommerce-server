@@ -140,6 +140,7 @@ async function findAllProducts(sort?: sortCategoryOptions, page = 0, limit?: num
 
         return await Product
             .find()
+            .collation({ locale: 'en' })
             .sort(sort)
             .limit(limit)
             .skip(limit * (page - 1));
@@ -162,7 +163,7 @@ async function searchProductsByName(name: string, sort?: sortCategoryOptions, pa
     try {
         if (page === 0) return await Product.find({
             name: RegExp(name, 'i'),
-        }).sort(sort);
+        }).collation({ locale: 'en' }).sort(sort);
 
         limit = limit || Number(process.env.PRODUCTS_PER_PAGE);
 
