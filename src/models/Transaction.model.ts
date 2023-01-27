@@ -2,6 +2,15 @@ import { model, Schema, Types } from "mongoose";
 import { IProduct } from "./Product.model";
 import { IUser } from "./User.model";
 
+/**
+ * ```typescript
+ * interface ITransaction {
+    buyer: IUser;
+    product: IProduct;
+    createdAt: Date;
+}
+ * ```
+ */
 export interface ITransaction {
     buyer: IUser;
     product: IProduct;

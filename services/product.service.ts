@@ -43,16 +43,16 @@ async function findProductById(id: string | Types.ObjectId) {
 async function getUserProducts(userId: string | Types.ObjectId, sort?: sortCategoryOptions, page = 0, limit?: number) {
     try {
         if (page === 0) return await Product
-            .find({ owner: userId})
+            .find({ owner: userId })
             .select('name price image')
-            .collation({ locale: 'en'})
+            .collation({ locale: 'en' })
             .sort(sort);
 
         limit = limit || Number(process.env.PRODUCTS_PER_PAGE);
 
         const products = await Product
             .find({ owner: userId })
-            .collation({ locale: 'en'})
+            .collation({ locale: 'en' })
             .limit(limit)
             .skip(limit * (page - 1))
             .sort(sort)
@@ -125,22 +125,24 @@ async function deleteProduct(id: string | Types.ObjectId) {
 
 /**
  * Returns an array of all products, optionally sorting and paginating them.
+ *
  * If you do not pass any arguments, a mere array of the products is returned.
- * If you want to paginate the result, but not sort it, pass undefined as the first argument.
- * By default, the page argument is 0, meaning that it won't paginate at all, unless you explicitly give it a page.
- * If page is passed, but not limit, it will use process.env.PAGES_PER_ROUND in limit's place.
+ * 
+ * If you want to paginate the result, but not sort it, pass ``undefined`` as the first argument.
+ * By default, the ``page`` argument is ``0``, meaning that it won't paginate at all, unless you explicitly give it a page.
+ * If ``page`` is passed, but not ``limit``, it will use ``process.env.PRODUCTS_PER_PAGE`` in limit's place.
  */
 async function findAllProducts(sort?: sortCategoryOptions, page = 0, limit?: number) {
     try {
         if (page === 0) return await Product.find().sort(sort);
 
-    limit = limit || Number(process.env.PRODUCTS_PER_PAGE);
+        limit = limit || Number(process.env.PRODUCTS_PER_PAGE);
 
-    return await Product
-        .find()
-        .sort(sort)
-        .limit(limit)
-        .skip(limit * (page - 1));
+        return await Product
+            .find()
+            .sort(sort)
+            .limit(limit)
+            .skip(limit * (page - 1));
     } catch {
         throw new HttpError('Invalid option', HttpStatus.BAD_REQUEST);
     }
@@ -149,19 +151,21 @@ async function findAllProducts(sort?: sortCategoryOptions, page = 0, limit?: num
 /**
  * Returns an array of all products whose names contain the given string, optionally sorting and paginating them.
  * The search is case insensitive.
+
  * If you do not pass any additional arguments, the function will simply return an array of all matches.
- * If you want to paginate the result, but not sort it, pass undefined as the second argument (after the name parameter).
- * By default, the page argument is 0, meaning that it won't paginate at all, unless you explicitly give it a page.
- * If page is passed, but not limit, it will use process.env.PAGES_PER_ROUND in limit's place.
+
+ * If you want to paginate the result, but not sort it, pass ``undefined`` as the second argument (after the name parameter).
+ * By default, the ``page`` argument is ``0``, meaning that it won't paginate at all, unless you explicitly give it a page.
+ * If ``page`` is passed, but not ``limit``, it will use ``process.env.PRODUCTS_PER_PAGE`` in ``limit``'s place.
  */
 async function searchProductsByName(name: string, sort?: sortCategoryOptions, page = 0, limit?: number) {
     try {
         if (page === 0) return await Product.find({
             name: RegExp(name, 'i'),
         }).sort(sort);
-    
+
         limit = limit || Number(process.env.PRODUCTS_PER_PAGE);
-    
+
         return await Product.find({
             name: RegExp(name, 'i'),
         })
@@ -176,6 +180,9 @@ async function searchProductsByName(name: string, sort?: sortCategoryOptions, pa
 
 /**
  * Returns the amount of products in the database. Useful for pagination.
+
+ * If an argument is passed to this function, it will instead return the number of products
+    whose name contains the given string.
  */
 async function getProductCount(name = '') {
     return await Product.find({
@@ -185,7 +192,7 @@ async function getProductCount(name = '') {
 
 /**
  * Adds the product to the user's boughtProducts property and adds the user to the product's buyers property.
- * Both IDs are converted to ObjectId before executing any operations.
+ * Both IDs are converted to ``ObjectId`` before executing any operations.
  * The function throws an error if the user/product does not exist, the user has already bought the product,
  * or the user is the owner of the product.
  */
@@ -242,9 +249,9 @@ async function checkIfUserHasBoughtTheProduct(userId: string | Types.ObjectId, p
 }
 
 /**
- * Returns a boolean value indicating if the user is the creator of the product with the given ID.
+ * Returns a boolean value indicating if the user with the given ID
+ * is the creator of the product with the given ID.
  * Throws an error if the product does not exist.
- * Both IDs are converted to ObjectId before executing any operations.
  */
 async function checkIfUserIsTheOwnerOfTheProduct(userId: string | Types.ObjectId, productId: string | Types.ObjectId) {
     const product = await Product.findById(productId);

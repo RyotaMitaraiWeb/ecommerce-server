@@ -2,6 +2,18 @@ import { model, Types, Schema } from "mongoose";
 import Transaction from "./Transaction.model.js";
 import User, { IUser } from "./User.model.js";
 
+/**
+ * ```typescript
+ * interface IProduct {
+    _id: Types.ObjectId,
+    name: string;
+    price: number;
+    image: string;
+    owner: IUser;
+    buyers: IUser[];
+}
+ * ```
+ */
 export interface IProduct {
     _id: Types.ObjectId,
     name: string;

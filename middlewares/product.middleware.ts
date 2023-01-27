@@ -29,8 +29,10 @@ export async function attachProductToRequest(req: IRequest, res: Response, next:
 /**
  * This middleware authorizes a request if the user is the creator of the product.
  * You can pass the ``attachProductToRequest`` middleware before that to make sure that the product exists.
+ * 
  * Alternatively, this middleware can also search the product on its own if no product has been attached to the
- * request object and attach it itself instead, however, this approach does not abort the request if the product does not exist.
+ * request object and attach it itself instead.
+ * 
  * If you merely want to check whether the user is the creator without authorizing the request,
  * use the ``checkIfUserIsTheCreatorOfTheProduct`` middleware
  */
@@ -54,6 +56,7 @@ export async function authorizeOwner(req: IRequest, res: Response, next: NextFun
             if (!product) {
                 throw new HttpError('Product does not exist', HttpStatus.NOT_FOUND)
             }
+
             if (product?.owner.toString() === userId) {
                 req.product = product;
 
@@ -72,7 +75,9 @@ export async function authorizeOwner(req: IRequest, res: Response, next: NextFun
 /**
  * This middleware attaches to the request object information about whether the user
  * is the creator of the product. To abort the request if the user is not the creator of the product,
- * use the ``authorizeOwner`` middleware instead. 
+ * use the ``authorizeOwner`` middleware instead.
+ * 
+ * This middleware aborts the request if the product does not exist.
  */
 export async function checkIfUserIsTheCreatorOfTheProduct(req: IRequest, res: Response, next: NextFunction) {
 
@@ -142,6 +147,11 @@ export async function authorizeBuyer(req: IRequest, res: Response, next: NextFun
     }
 }
 
+/**
+ * This middleware attaches information to the request object about whether the user has bought the product.
+ * 
+ * To abort requests if the user has bought the product, use the ``authorizeBuyer`` middleware. 
+ */
 export async function checkIfUserHasBoughtTheProduct(req: IRequest, res: Response, next: NextFunction) {
     try {
         if (!req.user) {

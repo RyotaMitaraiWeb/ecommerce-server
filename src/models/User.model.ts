@@ -5,6 +5,19 @@ import * as bcrypt from 'bcrypt';
 export type palette = 'blue' | 'indigo' | 'deepPurple' | 'green' | 'amber' | 'pink';
 export type theme = 'light' | 'dark';
 
+/**
+ * ```typescript
+ * interface IUser {
+    _id: Types.ObjectId;
+    username: string;
+    password: string;
+    products: IProduct[],
+    boughtProducts: IProduct[],
+    palette: string;
+    theme: string;
+}
+ * ```
+ */
 export interface IUser {
     _id: Types.ObjectId;
     username: string;
