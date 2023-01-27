@@ -99,13 +99,13 @@ The middlewares are used to authorize or modify requests. The authorizing middle
 When sending an authorized request, you must attach a JWT to the ``authorization`` header.
 
 ### attachLoginStatusToRequest
-A modifying middleware, attaches the user to the request object if the JWT provided to it is valid.
+A modifying middleware, attaches the user to the request object if the JWT provided to it is valid. You should use this or ``authorizeUser`` in every request that identifies the user in some way (e.g. verifying ownership or a purchase), as other middlewares depend on the request object to obtain data about the user.
 
 ### authorizeGuest
 This middleware blocks requests from logged in users.
 
 ### authorizeUser
-This middleware blocks requests from guests. If the request is authorized successfuly, the middleware will attach the user to the request.
+This middleware blocks requests from guests. If the request is authorized successfuly, the middleware will attach the user to the request. You should use this or ``attachLoginStatusToRequest`` in every request that identifies the user in some way (e.g. verifying ownership or a purchase), as other middlewares depend on the request object to obtain data about the user.
 
 ### blacklistToken
 This middlewares invalidates a valid JWT and makes it unusable for future authorized requests.
@@ -236,7 +236,7 @@ Refer to the ``authorizeBuyer`` middleware method for more information regarding
 You can send an authorized request to ``/product/:id/isOwner``, where ``:id`` is the product's id. If the user is the owner, the server returns a status code of 200 with the product attached to the response, 404 if the product does not exist, 401 if the user is not logged in, or 403 otherwise.
 
 #### Getting user's products
-To retrieve all products created by a specific user, send an authorized GET request to ``/product/own``. All products in the array consist of a price, name, and ``_id``.
+To retrieve all products created by a specific user, send an authorized GET request to ``/product/own``. All products in the array consist of a price, name, image, and ``_id``. The results can be sorted and paginated (refer to the search products section for more information)
 
 ## ``util``
 This folder contains utility functions to make certain tasks easier
