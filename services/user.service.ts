@@ -72,6 +72,8 @@ async function changePalette(id: string | Types.ObjectId, palette: palette) {
     });
 
     if (user === null) throw new HttpError('User does not exist', HttpStatus.NOT_FOUND);
+
+    await user.save();
     return user;
 }
 
@@ -85,6 +87,8 @@ async function changeTheme(id: string | Types.ObjectId, theme: theme) {
     });
     
     if (user === null) throw new HttpError('User does not exist', HttpStatus.NOT_FOUND);
+
+    await user.save();
     return user;
 }
 

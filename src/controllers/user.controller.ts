@@ -20,7 +20,18 @@ function extractDataFromUserForJwtToken(user: IUser) {
 }
 
 router.get('/user', authorizeUser, async (req: IRequest, res: Response) => {
-    res.status(HttpStatus.OK).json(req.user).end();
+    try {
+        if (!req.user) {
+            throw new HttpError('Something went wrong with your session', HttpStatus.UNAUTHORIZED)
+        }
+        const data = await userService.findUserById(req.user._id) as IUser;
+        const user = extractDataFromUserForJwtToken(data);
+
+        res.status(HttpStatus.OK).json(user).end();
+    } catch (err: any) {
+        const errors = mapErrors(err);
+        res.status(err.status).json(errors).end();
+    }    
 });
 
 router.get('/user/transactions', authorizeUser, async (req: IRequest, res: Response) => {
@@ -107,7 +118,7 @@ router.put('/user/theme', authorizeUser, async (req: IRequest, res: Response) =>
 
         const theme: theme = req.body.theme;
         await userService.changeTheme(req.user._id, theme);
-
+        
         res.status(HttpStatus.OK).json({ theme }).end();
     } catch (err: any) {
         const errors = mapErrors(err);
