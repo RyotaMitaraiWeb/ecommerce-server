@@ -26,7 +26,7 @@ export async function authorizeUser(req: IRequest, res: Response, next: NextFunc
         const token = req.headers['authorization'] || '';
 
         if (blacklist.has(token)) {
-            throw new HttpError('Invalid token', HttpStatus.UNAUTHORIZED);
+            throw new HttpError('Invalid session, please log in!', HttpStatus.UNAUTHORIZED);
         }
 
         const user: IUserState = jwt.verify(token, process.env.JWT || 'weioweewniw') as IUserState;
@@ -35,7 +35,7 @@ export async function authorizeUser(req: IRequest, res: Response, next: NextFunc
 
     } catch (err: any) {
         res.status(HttpStatus.UNAUTHORIZED).json([{
-            msg: 'Invalid token',
+            msg: 'You must be logged in to perform this action',
         }]).end();
     }
 }
@@ -79,7 +79,7 @@ export async function attachLoginStatusToRequest(req: IRequest, _res: Response, 
         const token = req.headers['authorization'] || '';
 
         if (blacklist.has(token)) {
-            throw Error('Invalid token');
+            throw Error('Invalid session, please log in!');
         }
 
         const user: IUserState = jwt.verify(token, process.env.JWT || 'weioweewniw') as IUserState;

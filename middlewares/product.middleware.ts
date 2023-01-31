@@ -132,11 +132,11 @@ export async function authorizeBuyer(req: IRequest, res: Response, next: NextFun
 
         const hasBought = await productService.checkIfUserHasBoughtTheProduct(userId, productId);
         if (hasBought) {
-            throw new HttpError('User has already bought the item', HttpStatus.FORBIDDEN);
+            throw new HttpError('You have already bought the item', HttpStatus.FORBIDDEN);
         }
 
         if (req.isOwner) {
-            throw new HttpError('Creators cannot buy their own products', HttpStatus.FORBIDDEN);
+            throw new HttpError('You cannot buy a product that you have created', HttpStatus.FORBIDDEN);
         }
 
         req.hasBought = hasBought;

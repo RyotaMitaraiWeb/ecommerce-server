@@ -212,11 +212,11 @@ async function buyProduct(userId: string | Types.ObjectId, productId: string | T
     const duplicate = user.boughtProducts.find(bp => bp._id.toString() === productId)
 
     if (duplicate) {
-        throw new HttpError('Product has already been bought', HttpStatus.FORBIDDEN);
+        throw new HttpError('You have already bought this product', HttpStatus.FORBIDDEN);
     }
 
     if (userId.toString() === product.owner.toString()) {
-        throw new HttpError('Owners cannot buy their own products', HttpStatus.FORBIDDEN);
+        throw new HttpError('You cannot buy a product that you have created', HttpStatus.FORBIDDEN);
     }
 
     product.buyers.push(user);
