@@ -1,6 +1,10 @@
 # Ecommerce server
 Server for ecommerce application, written in Express and TypeScript.
 
+Deployed version: [https://ecommerce-315d8.web.app/](https://ecommerce-315d8.web.app/)
+
+**NOTE:** Due to the server using a free plan, it is possible for the application to be non-responding (or "frozen") for a few minutes if it has not been used by anyone for some time. Please be patient!
+
 ## How to run
 ```bash
 # install dependencies
